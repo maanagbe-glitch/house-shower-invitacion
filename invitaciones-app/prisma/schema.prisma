@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Usamos SQLite para desarrollo fácil
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String       @id @default(uuid())
+  email       String       @unique
+  password    String
+  name        String?
+  invitations Invitation[]
+  createdAt   DateTime     @default(now())
+}
+
+model Invitation {
+  id              String          @id @default(uuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  slug            String          @unique
+  title           String
+  hosts           String
+  invitationText  String
+  date            DateTime
+  time            String
+  locationName    String
+  address         String
+  template        String          @default("elegante")
+  maxCompanions   Int             @default(2)
+  rsvpActive      Boolean         @default(true)
+  rsvpDeadline    DateTime?
+  imageUrl        String?         // <--- ESTA LÍNEA DEBE ESTAR AQUÍ
+  giftUrl         String?
+  giftText        String?
+  whatsappMsg     String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  responses       GuestResponse[]
+}
+
+model GuestResponse {
+  id              String       @id @default(uuid())
+  invitationId    String
+  invitation      Invitation   @relation(fields: [invitationId], references: [id])
+  status          String       
+  name            String
+  companionsCount Int          @default(0)
+  companions      Companion[]
+  createdAt       DateTime     @default(now())
+}
+
+model Companion {
+  id              String        @id @default(uuid())
+  guestResponseId String
+  guestResponse   GuestResponse @relation(fields: [guestResponseId], references: [id], onDelete: Cascade)
+  name            String
+}
